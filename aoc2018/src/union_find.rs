@@ -7,7 +7,7 @@ impl UnionFind {
     /// Create new UnionFind disjoint set that has nodes in [0..size)
     pub fn new(size: i32) -> UnionFind {
         let mut nodes = Vec::with_capacity(size as usize);
-        for _ in 1..size + 1 {
+        for _ in 1..=size {
             nodes.push(-1);
         }
         UnionFind { nodes }

@@ -4,7 +4,9 @@ rust:
 cache: cargo
 before_script:
   - rustup component add rustfmt-preview
+  - rustup component add clippy-preview
 script:
   - cargo fmt --all -- --check
+  - cargo clippy --all -- -D warnings
   - cargo build --all
   - cargo test --all
