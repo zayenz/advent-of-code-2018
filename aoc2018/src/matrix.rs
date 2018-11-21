@@ -144,7 +144,7 @@ impl Matrix {
         result
     }
 
-    pub fn iter(&self) -> MatrixIterator {
+    pub fn iter(&self) -> MatrixIterator<'_> {
         self.into_iter()
     }
 }
@@ -219,7 +219,7 @@ impl FromStr for Matrix {
 }
 
 impl fmt::Display for Matrix {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for y in 0..self.height {
             for x in 0..self.width {
                 write!(f, "{}", if self[(x, y)] { '#' } else { '.' })?;

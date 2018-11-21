@@ -1,14 +1,9 @@
 #![allow(dead_code, unused_imports)]
 
-#[macro_use]
-extern crate failure;
+use failure::bail;
 use failure::Error;
-extern crate strum;
-#[macro_use]
-extern crate strum_macros;
-
-extern crate rayon;
 use rayon::prelude::*;
+use strum_macros::EnumString;
 
 use std::char;
 use std::cmp::{max, min};

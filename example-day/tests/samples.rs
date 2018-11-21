@@ -1,4 +1,4 @@
-extern crate assert_cli;
+use assert_cli;
 
 #[test]
 fn sample1() {
@@ -7,7 +7,8 @@ fn sample1() {
             "1
 2
 3",
-        ).stdout()
+        )
+        .stdout()
         .is("6")
         .unwrap();
 }
