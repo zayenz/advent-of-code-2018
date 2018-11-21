@@ -1,0 +1,8 @@
+[package]
+name = "aoc2018"
+version = "0.1.0"
+authors = ["Mikael Zayenz Lagerkvist <zayenz@gmail.com>"]
+
+[dependencies]
+failure = "0.1.1"
+
