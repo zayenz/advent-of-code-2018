@@ -5,9 +5,9 @@ use failure::Error;
 use rayon::prelude::*;
 use strum_macros::EnumString;
 
+use hashbrown::{HashMap, HashSet};
 use std::char;
 use std::cmp::{max, min};
-use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::io::BufRead;
 use std::ops::*;

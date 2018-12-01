@@ -10,6 +10,7 @@ strum = "0.11.0"
 strum_macros = "0.11.0"
 rayon = "1"
 aoc2018 = { path = "../aoc2018"}
+hashbrown = "0.1.6"
 
 
 [dev-dependencies]
