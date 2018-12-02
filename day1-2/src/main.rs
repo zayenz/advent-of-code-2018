@@ -57,6 +57,7 @@ fn main() {
     match run() {
         Ok(()) => process::exit(0),
         Err(error) => {
+            eprintln!("Error while solving problem: {}", error);
             for cause in error.iter_causes() {
                 eprintln!("{}", cause)
             }
