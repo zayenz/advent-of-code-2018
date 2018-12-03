@@ -111,8 +111,6 @@ fn matching_ones(a: &Matrix, b: &Matrix) -> u32 {
 }
 
 fn solve(input: &mut Input) -> Result<Output, Error> {
-    let mut result = 0;
-
     let max_right = input
         .iter()
         .map(|c| c.right)
@@ -126,15 +124,25 @@ fn solve(input: &mut Input) -> Result<Output, Error> {
     let width = (max_right + 2) as usize;
     let height = (max_bottom + 2) as usize;
 
-    let fabrics = input
-        .iter()
-        .map(|c| c.to_matrix(width, height))
-        .collect::<Vec<_>>();
+    let mut claim_count = HashMap::new();
+    for w in 0i32..(width as i32) {
+        for h in 0i32..(height as i32) {
+            claim_count.insert((w, h), 0);
+        }
+    }
 
-    for w in 0..width {
-        for h in 0..height {
-            let claims = fabrics.iter().filter(|f| f[(w, h)]).count();
-            if claims > 1 {
+    for claim in input.iter() {
+        for w in claim.left..=claim.right {
+            for h in claim.top..=claim.bottom {
+                *claim_count.get_mut(&(w, h)).unwrap() += 1;
+            }
+        }
+    }
+
+    let mut result = 0;
+    for w in 0i32..(width as i32) {
+        for h in 0i32..(height as i32) {
+            if claim_count[&(w, h)] > 1 {
                 result += 1;
             }
         }

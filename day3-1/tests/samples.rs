@@ -14,11 +14,11 @@ fn sample1() {
         .unwrap();
 }
 
-//#[test]
+#[test]
 fn puzzle1() {
     assert_cli::Assert::main_binary()
         .stdin(include_str!("../data/puzzle1.in"))
         .stdout()
-        .is("pbykrmjmizwhxlqnasfgtycdv")
+        .is("115304")
         .unwrap();
 }
