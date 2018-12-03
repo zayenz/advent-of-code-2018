@@ -1,4 +1,4 @@
-#![allow(dead_code, unused_imports)]
+#![allow(dead_code, unused_imports, clippy::needless_range_loop)]
 
 use failure::bail;
 use failure::err_msg;
@@ -24,14 +24,14 @@ type Output = i32;
 
 struct Claim {
     id: i32,
-    left: i32,
-    right: i32,
-    top: i32,
-    bottom: i32,
+    left: usize,
+    right: usize,
+    top: usize,
+    bottom: usize,
 }
 
 impl Claim {
-    fn new(id: i32, left: i32, right: i32, top: i32, bottom: i32) -> Claim {
+    fn new(id: i32, left: usize, right: usize, top: usize, bottom: usize) -> Claim {
         Claim {
             id,
             left,
@@ -42,26 +42,11 @@ impl Claim {
     }
 
     fn width(&self) -> usize {
-        (self.right - self.left + 1) as usize
+        self.right - self.left + 1
     }
 
     fn height(&self) -> usize {
-        (self.bottom - self.top + 1) as usize
-    }
-
-    fn to_matrix(&self, width: usize, height: usize) -> Matrix {
-        let mut result = Matrix::new(width, height);
-        self.mark(&mut result);
-        result
-    }
-
-    fn mark(&self, matrix: &mut Matrix) {
-        matrix.fill_true(
-            self.left as usize,
-            self.top as usize,
-            self.width(),
-            self.height(),
-        );
+        self.bottom - self.top + 1
     }
 }
 
@@ -72,23 +57,19 @@ impl FromStr for Claim {
         let cleaned: String = s
             .chars()
             .map(|c| {
-                if c == '#' || c == 'x' || c == '@' || c == ':' {
+                if c == '#' || c == 'x' || c == '@' || c == ':' || c == ',' {
                     ' '
                 } else {
                     c
                 }
             })
             .collect();
-        let tokens = cleaned
-            .split(' ')
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>();
+        let tokens = cleaned.split_whitespace().collect::<Vec<_>>();
         let id = tokens[0].parse()?;
-        let coordinates = tokens[1].split(',').collect::<Vec<&str>>();
-        let left = coordinates[0].parse()?;
-        let top = coordinates[1].parse()?;
-        let width: i32 = tokens[2].parse()?;
-        let height: i32 = tokens[3].parse()?;
+        let left = tokens[1].parse()?;
+        let top = tokens[2].parse()?;
+        let width: usize = tokens[3].parse()?;
+        let height: usize = tokens[4].parse()?;
         let right = left + width - 1;
         let bottom = top + height - 1;
         Ok(Claim::new(id, left, right, top, bottom))
@@ -100,7 +81,7 @@ fn read_input() -> Result<Input, Error> {
     let mut result = Vec::new();
     for line in stdin.lock().lines() {
         let line = line?;
-        result.push(line.trim().to_owned().parse()?)
+        result.push(line.trim().parse()?)
     }
 
     Ok(result)
@@ -111,30 +92,15 @@ fn matching_ones(a: &Matrix, b: &Matrix) -> u32 {
 }
 
 fn solve(input: &mut Input) -> Result<Output, Error> {
-    let max_right = input
-        .iter()
-        .map(|c| c.right)
-        .max()
-        .ok_or_else(|| err_msg("No input"))?;
-    let max_bottom = input
-        .iter()
-        .map(|c| c.bottom)
-        .max()
-        .ok_or_else(|| err_msg("No input"))?;
-    let width = (max_right + 2) as usize;
-    let height = (max_bottom + 2) as usize;
+    const WIDTH: usize = 1000;
+    const HEIGHT: usize = 1000;
 
-    let mut claim_count = HashMap::new();
-    for w in 0i32..(width as i32) {
-        for h in 0i32..(height as i32) {
-            claim_count.insert((w, h), 0);
-        }
-    }
+    let mut claim_count = [[0; HEIGHT]; WIDTH];
 
     for claim in input.iter() {
         for w in claim.left..=claim.right {
             for h in claim.top..=claim.bottom {
-                *claim_count.get_mut(&(w, h)).unwrap() += 1;
+                claim_count[w][h] += 1;
             }
         }
     }
@@ -142,7 +108,7 @@ fn solve(input: &mut Input) -> Result<Output, Error> {
     'claim_loop: for claim in input.iter() {
         for w in claim.left..=claim.right {
             for h in claim.top..=claim.bottom {
-                if claim_count[&(w, h)] > 1 {
+                if claim_count[w][h] > 1 {
                     continue 'claim_loop;
                 }
             }
