@@ -2,6 +2,8 @@ use failure::Error;
 use lazy_static::lazy_static;
 use num::Integer;
 use regex::Regex;
+use std::error::Error as StdError;
+use std::fmt::Debug;
 use std::str::FromStr;
 
 /// Extract numbers from string.
@@ -16,16 +18,31 @@ use std::str::FromStr;
 /// # Ok(())
 /// # }
 /// ```
-pub fn get_numbers<N: Integer + FromStr>(input: &str) -> Result<Vec<N>, Error> {
+pub fn get_numbers<N: Integer + Copy + Clone + Debug + FromStr>(
+    input: &str,
+) -> Result<Vec<N>, Error>
+where
+    <N as std::str::FromStr>::Err: StdError,
+{
     lazy_static! {
         static ref Number: Regex = Regex::new(r"-?\d+").unwrap();
     }
 
     Number
         .find_iter(input)
-        .map(|number| number.as_str().parse())
+        .map(|m| match m.as_str().parse::<N>() {
+            Ok(number) => Ok(number),
+            Err(err) => {
+                let message = format!(
+                    "Could not convert \"{}\" from \"{}\", reason is {:?}",
+                    m.as_str(),
+                    input,
+                    err.description()
+                );
+                Err(failure::err_msg(message))
+            }
+        })
         .collect::<Result<Vec<N>, _>>()
-        .map_err(|_| failure::err_msg(format!("Could not convert numbers in {}", input)))
 }
 
 #[cfg(test)]
