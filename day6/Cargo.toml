@@ -13,6 +13,7 @@ aoc2018 = { path = "../aoc2018"}
 hashbrown = "0.1.6"
 tap = "0.3.0"
 structopt = "0.2.13"
+streaming-stats = "0.2.2"
 
 
 [dev-dependencies]

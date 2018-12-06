@@ -12,7 +12,7 @@ fn sample1_1() {
 8, 9",
         )
         .stdout()
-        .is("1")
+        .is("17")
         .unwrap();
 }
 
