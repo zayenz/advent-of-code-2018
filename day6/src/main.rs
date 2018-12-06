@@ -85,7 +85,7 @@ fn closest(markers: &Vec<(usize, (usize, usize))>, x: usize, y: usize) -> usize 
     }
 }
 
-fn make_matrix(input: &mut Vec<(usize, usize)>, max_x: usize, max_y: usize) -> Vec<Vec<usize>> {
+fn make_matrix1(input: &mut Vec<(usize, usize)>, max_x: usize, max_y: usize) -> Vec<Vec<usize>> {
     let mut current = vec![vec![0 as usize; max_y]; max_x];
 
     let markers = input
@@ -109,7 +109,7 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
     let max_x = input.iter().map(|&(a, _)| a).max().unwrap() + 1 + PAD;
     let max_y = input.iter().map(|&(_, b)| b).max().unwrap() + 1 + PAD;
 
-    let current = make_matrix(input, max_x, max_y);
+    let current = make_matrix1(input, max_x, max_y);
 
     let mut infinite = HashSet::new();
     infinite.insert(0);
@@ -135,8 +135,41 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
     Ok(non_infinite.most_frequent()[0].1 as usize)
 }
 
+fn make_matrix2(input: &Vec<(usize, usize)>, max_x: usize, max_y: usize) -> Vec<Vec<usize>> {
+    const MAX_DISTANCE: usize = 10000;
+
+    let mut current = vec![vec![0 as usize; max_y]; max_x];
+
+    let markers = input
+        .iter()
+        .enumerate()
+        .map(|(i, &(x, y))| (i + 1, (x, y)))
+        .collect::<Vec<_>>();
+
+    for x in 0..max_x {
+        for y in 0..max_y {
+            let total_distance: usize = markers
+                .iter()
+                .map(|&(_m, (mx, my))| distance(x, y, mx, my))
+                .sum();
+            current[x][y] = if total_distance < MAX_DISTANCE { 1 } else { 0 }
+        }
+    }
+
+    //    print_matrix(max_x, max_y, &current);
+
+    current
+}
+
 fn solve2(input: &mut Input) -> Result<Output, Error> {
-    Ok(2)
+    let max_x = input.iter().map(|&(a, _)| a).max().unwrap() + 1 + PAD;
+    let max_y = input.iter().map(|&(_, b)| b).max().unwrap() + 1 + PAD;
+
+    let map = make_matrix2(&input, max_x, max_y);
+
+    let result = map.iter().flatten().filter(|&&v| v == 1).count();
+
+    Ok(result)
 }
 
 #[derive(StructOpt, Debug)]
