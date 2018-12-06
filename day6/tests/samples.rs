@@ -38,7 +38,7 @@ fn puzzle1() {
     assert_cli::Assert::main_binary()
         .stdin(include_str!("../data/puzzle1.in"))
         .stdout()
-        .is("1")
+        .is("4829")
         .unwrap();
 }
 

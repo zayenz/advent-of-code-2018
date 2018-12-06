@@ -49,62 +49,67 @@ fn read_input() -> Result<Input, Error> {
     Ok(result)
 }
 
+fn print_matrix(max_x: usize, max_y: usize, current: &Vec<Vec<usize>>) {
+    println!("Matrix:");
+    for y in 0..max_y {
+        for x in 0..max_x {
+            if current[x][y] == 0 {
+                print!("·");
+            } else {
+                let ch = (('a' as usize) + current[x][y] - 1) as u8 as char;
+                print!("{}", ch);
+            }
+        }
+        println!();
+    }
+}
+
+fn distance(x1: usize, y1: usize, x2: usize, y2: usize) -> usize {
+    ((x1 as i64 - x2 as i64).abs() + (y1 as i64 - y2 as i64).abs()) as usize
+}
+
+fn closest(markers: &Vec<(usize, (usize, usize))>, x: usize, y: usize) -> usize {
+    let distances = markers
+        .iter()
+        .map(|&(m, (mx, my))| (m, distance(mx, my, x, y)))
+        .collect::<Vec<_>>();
+    let min_distance = distances.iter().map(|&(_m, d)| d).min().unwrap();
+    let all_min = distances
+        .iter()
+        .filter(|&(_m, d)| *d == min_distance)
+        .collect::<Vec<_>>();
+    if all_min.len() == 1 {
+        all_min[0].0
+    } else {
+        0
+    }
+}
+
+fn make_matrix(input: &mut Vec<(usize, usize)>, max_x: usize, max_y: usize) -> Vec<Vec<usize>> {
+    let mut current = vec![vec![0 as usize; max_y]; max_x];
+
+    let markers = input
+        .iter()
+        .enumerate()
+        .map(|(i, &(x, y))| (i + 1, (x, y)))
+        .collect();
+
+    for x in 0..max_x {
+        for y in 0..max_y {
+            current[x][y] = closest(&markers, x, y);
+        }
+    }
+
+    //    print_matrix(max_x, max_y, &current);
+
+    current
+}
+
 fn solve1(input: &mut Input) -> Result<Output, Error> {
     let max_x = input.iter().map(|&(a, _)| a).max().unwrap() + 1 + PAD;
     let max_y = input.iter().map(|&(_, b)| b).max().unwrap() + 1 + PAD;
 
-    let mut current = vec![vec![0 as usize; max_y]; max_x];
-    let mut next = current.clone();
-
-    for (i, &(x, y)) in input.iter().enumerate() {
-        current[x][y] = i + 1;
-    }
-    print_matrix(max_x, max_y, &current);
-
-    loop {
-        let mut changed = false;
-        for x in 1..(max_x - 1) {
-            for y in 1..(max_y - 1) {
-                let c = current[x][y];
-                if c == 0 {
-                    let u = current[x][y - 1];
-                    let d = current[x][y + 1];
-                    let l = current[x - 1][y];
-                    let r = current[x + 1][y];
-                    let n = [u, d, l, r]
-                        .iter()
-                        .filter(|&&v| v != 0)
-                        .cloned()
-                        .collect::<Vec<usize>>();
-                    if n.is_empty() {
-                        next[x][y] = 0;
-                    } else {
-                        let n1 = n[0];
-                        if n.iter().filter(|&&v| v == n1).count() == n.len() {
-                            next[x][y] = n1;
-                            changed = true;
-                        } else {
-                            next[x][y] = 0;
-                        }
-                    }
-                } else {
-                    next[x][y] = c;
-                }
-            }
-        }
-
-        let tmp = current;
-        current = next;
-        next = tmp;
-
-        print_matrix(max_x, max_y, &current);
-
-        if !changed {
-            break;
-        }
-    }
-
-    print_matrix(max_x, max_y, &current);
+    let current = make_matrix(input, max_x, max_y);
 
     let mut infinite = HashSet::new();
     infinite.insert(0);
@@ -124,22 +129,10 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
         .cloned()
         .collect::<Frequencies<usize>>();
 
-    Ok(*non_infinite.most_frequent()[0].0)
-}
+    //    println!("{:?}", infinite);
+    //    println!("{:?}", non_infinite);
 
-fn print_matrix(max_x: usize, max_y: usize, current: &Vec<Vec<usize>>) {
-    println!("Matrix:");
-    for y in 1..max_y {
-        for x in 1..max_x {
-            if current[x][y] == 0 {
-                print!("·");
-            } else {
-                let ch = (('a' as usize) + current[x][y] - 1) as u8 as char;
-                print!("{}", ch);
-            }
-        }
-        println!();
-    }
+    Ok(non_infinite.most_frequent()[0].1 as usize)
 }
 
 fn solve2(input: &mut Input) -> Result<Output, Error> {
