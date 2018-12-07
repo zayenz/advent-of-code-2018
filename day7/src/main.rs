@@ -48,7 +48,6 @@ fn read_input() -> Result<Input, Error> {
 }
 
 fn solve1(input: &mut Input) -> Result<Output, Error> {
-    //    let mut todo: HashSet<char> = (('A' as u8)..=('Z' as u8)).map(|c| c as char).collect();
     let tasks: HashSet<char> = input.iter().flat_map(|&(a, b)| vec![a, b]).collect();
     let mut done: HashSet<char> = HashSet::new();
     let mut prereqs = HashMap::new();
@@ -81,7 +80,60 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
 }
 
 fn solve2(input: &mut Input) -> Result<Output, Error> {
-    Ok("2".to_owned())
+    let tasks: HashSet<char> = input.iter().flat_map(|&(a, b)| vec![a, b]).collect();
+    let mut done: HashSet<char> = HashSet::new();
+    let mut prereqs = HashMap::new();
+    for ch in tasks.iter() {
+        prereqs.insert(ch, HashSet::new());
+    }
+    let mut todo = tasks.clone();
+    for &(req, task) in input.iter() {
+        prereqs.get_mut(&task).unwrap().insert(req);
+    }
+
+    let mut result: Vec<char> = Vec::new();
+    let mut in_progress: HashMap<char, u8> = HashMap::new();
+    let workers = 5;
+    let mut time = 0;
+    while result.len() < tasks.len() {
+        for (_task, remaining) in in_progress.iter_mut() {
+            *remaining -= 1;
+        }
+        let completed = in_progress
+            .iter()
+            .filter(|&(_task, &remaining)| remaining == 0)
+            .map(|(&task, _remaining)| task)
+            .collect::<Vec<_>>()
+            .tap(|v| v.sort());
+        for task in completed.iter() {
+            in_progress.remove(task);
+            result.push(*task);
+            done.insert(*task);
+            for prereq in prereqs.values_mut() {
+                prereq.remove(task);
+            }
+        }
+
+        if in_progress.len() < workers {
+            let ready = todo
+                .iter()
+                .cloned()
+                .filter(|c| prereqs[c].is_empty())
+                .collect::<Vec<_>>()
+                .tap(|v| v.sort());
+            for task in ready {
+                let work_time = 60 + (task as u8 - 'A' as u8) + 1;
+                in_progress.insert(task, work_time);
+                todo.remove(&task);
+                if in_progress.len() == workers {
+                    break;
+                }
+            }
+        }
+        time += 1;
+    }
+
+    Ok(format!("{}", time - 1))
 }
 
 #[derive(StructOpt, Debug)]
