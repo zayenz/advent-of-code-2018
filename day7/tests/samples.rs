@@ -29,7 +29,7 @@ fn puzzle1() {
 #[test]
 fn sample2_1() {
     assert_cli::Assert::main_binary()
-        .with_args(&["-p", "2"])
+        .with_args(&["-p", "2", "-w", "2", "-b", "0"])
         .stdin(
             "Step C must be finished before step A can begin.
 Step C must be finished before step F can begin.
@@ -40,7 +40,7 @@ Step D must be finished before step E can begin.
 Step F must be finished before step E can begin.",
         )
         .stdout()
-        .is("253")
+        .is("15")
         .unwrap();
 }
 

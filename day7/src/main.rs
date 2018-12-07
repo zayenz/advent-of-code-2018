@@ -79,7 +79,7 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
     Ok(result.iter().collect())
 }
 
-fn solve2(input: &mut Input) -> Result<Output, Error> {
+fn solve2(input: &mut Input, workers: usize, base_time: u8) -> Result<Output, Error> {
     let tasks: HashSet<char> = input.iter().flat_map(|&(a, b)| vec![a, b]).collect();
     let mut done: HashSet<char> = HashSet::new();
     let mut prereqs = HashMap::new();
@@ -93,7 +93,6 @@ fn solve2(input: &mut Input) -> Result<Output, Error> {
 
     let mut result: Vec<char> = Vec::new();
     let mut in_progress: HashMap<char, u8> = HashMap::new();
-    let workers = 5;
     let mut time = 0;
     while result.len() < tasks.len() {
         for (_task, remaining) in in_progress.iter_mut() {
@@ -122,7 +121,7 @@ fn solve2(input: &mut Input) -> Result<Output, Error> {
                 .collect::<Vec<_>>()
                 .tap(|v| v.sort());
             for task in ready {
-                let work_time = 60 + (task as u8 - 'A' as u8) + 1;
+                let work_time = base_time + (task as u8 - 'A' as u8) + 1;
                 in_progress.insert(task, work_time);
                 todo.remove(&task);
                 if in_progress.len() == workers {
@@ -142,6 +141,12 @@ struct Opt {
     /// Part to solve, either 1 or 2
     #[structopt(short = "-p", long = "--part", default_value = "1")]
     part: u8,
+    /// Number of workers
+    #[structopt(short = "-w", long = "--workers", default_value = "5")]
+    workers: usize,
+    /// Base time
+    #[structopt(short = "-b", long = "--base", default_value = "60")]
+    base_time: u8,
 }
 
 fn run() -> Result<(), Error> {
@@ -152,7 +157,7 @@ fn run() -> Result<(), Error> {
     let output = if options.part == 1 {
         solve1(&mut input)?
     } else {
-        solve2(&mut input)?
+        solve2(&mut input, options.workers, options.base_time)?
     };
 
     println!("{}", output);
