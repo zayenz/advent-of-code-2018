@@ -51,7 +51,6 @@ fn step(pos: usize, steps: i32, marbles: usize) -> usize {
         (pos + (steps as usize)) % marbles
     } else {
         let steps = -steps as usize;
-        //        println!("pos {} steps {} marbles {}", pos, steps, marbles);
         if pos < steps {
             marbles - (steps - pos)
         } else {
@@ -66,15 +65,6 @@ fn play(players: usize, max_score: usize) -> Vec<usize> {
     let mut pos = 0;
     let mut player = 0;
     for marble in 1..=max_score {
-        //        print!("PLayer {} and marble {} in ", player, marble);
-        //        for i in 0..marbles.len() {
-        //            if i == pos {
-        //                print!(">");
-        //            }
-        //            print!("{} ", marbles[i])
-        //        }
-        //        println!();
-
         if marble % 23 == 0 {
             scores[player] += marble;
             pos = step(pos, -7, marbles.len());
@@ -94,7 +84,6 @@ fn play(players: usize, max_score: usize) -> Vec<usize> {
 fn solve1(input: &mut Input) -> Result<Output, Error> {
     let (players, max_score) = *input;
     let scores = play(players, max_score);
-    //    println!("{:?}", scores);
     scores
         .into_iter()
         .max()
@@ -102,7 +91,12 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
 }
 
 fn solve2(input: &mut Input) -> Result<Output, Error> {
-    Ok(2)
+    let (players, max_score) = *input;
+    let scores = play(players, 100 * max_score);
+    scores
+        .into_iter()
+        .max()
+        .ok_or_else(|| err_msg("No scores?"))
 }
 
 #[derive(StructOpt, Debug)]

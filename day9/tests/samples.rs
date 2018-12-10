@@ -73,12 +73,13 @@ fn sample2_1() {
         .unwrap();
 }
 
-#[test]
-fn puzzle2() {
-    assert_cli::Assert::main_binary()
-        .with_args(&["-p", "2"])
-        .stdin(include_str!("../data/puzzle1.in"))
-        .stdout()
-        .is("2")
-        .unwrap();
-}
+// Takes too long to run
+//#[test]
+//fn puzzle2() {
+//    assert_cli::Assert::main_binary()
+//        .with_args(&["-p", "2"])
+//        .stdin(include_str!("../data/puzzle1.in"))
+//        .stdout()
+//        .is("2")
+//        .unwrap();
+//}
