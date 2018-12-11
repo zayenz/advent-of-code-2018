@@ -20,6 +20,7 @@ use failure::bail;
 use failure::err_msg;
 use failure::Error;
 use hashbrown::{HashMap, HashSet};
+use im::vector::Vector;
 use rayon::prelude::*;
 use stats::Frequencies;
 use structopt::StructOpt;
@@ -29,6 +30,8 @@ use tap::{TapOps, TapOptionOps, TapResultOps};
 use aoc2018::input::*;
 use aoc2018::matrix::*;
 use std::collections::BTreeSet;
+use std::fmt::Display;
+use std::fmt::Formatter;
 
 type Input = (usize, usize);
 type Output = usize;
@@ -90,9 +93,124 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
         .ok_or_else(|| err_msg("No scores?"))
 }
 
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Debug)]
+struct Marbles {
+    head: Vec<usize>,
+    tail: Vec<usize>,
+}
+
+impl Marbles {
+    fn initial() -> Marbles {
+        Marbles {
+            head: vec![0],
+            tail: Vec::new(),
+        }
+    }
+
+    fn all_tail_to_head(&mut self) {
+        while !self.tail.is_empty() {
+            self.tail_to_head()
+        }
+    }
+
+    fn tail_to_head(&mut self) {
+        self.head.push(self.tail.pop().unwrap())
+    }
+
+    fn all_head_to_tail(&mut self) {
+        while !self.head.is_empty() {
+            self.head_to_tail()
+        }
+    }
+
+    fn head_to_tail(&mut self) {
+        self.tail.push(self.head.pop().unwrap())
+    }
+
+    fn step(&mut self, steps: i32) {
+        if steps >= 0 {
+            for _ in 0..steps {
+                if self.tail.is_empty() {
+                    self.all_head_to_tail();
+                }
+                self.tail_to_head();
+            }
+        } else {
+            for _ in 0..steps.abs() {
+                if self.head.is_empty() {
+                    self.all_tail_to_head();
+                }
+                self.head_to_tail();
+            }
+        }
+    }
+
+    fn remove(&mut self) -> usize {
+        let res = self.head.pop().unwrap();
+        self.tail_to_head();
+        res
+    }
+
+    fn insert(&mut self, value: usize) {
+        self.head.push(value);
+    }
+
+    fn get(&self) -> usize {
+        *self.head.last().unwrap()
+    }
+
+    fn len(&self) -> usize {
+        self.head.len() + self.tail.len()
+    }
+
+    fn index(&self, i: usize) -> usize {
+        if i < self.head.len() {
+            self.head[i]
+        } else {
+            let i = i - self.head.len();
+            self.tail[self.tail.len() - 1 - i]
+        }
+    }
+}
+
+impl Display for Marbles {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "[")?;
+        for m in self.head.iter() {
+            write!(f, "{} ", m)?;
+        }
+        write!(f, "< ")?;
+        for m in self.tail.iter().rev() {
+            write!(f, "{} ", m)?;
+        }
+        write!(f, "]")?;
+
+        Ok(())
+    }
+}
+
+fn play2(players: usize, max_score: usize) -> Vec<usize> {
+    let mut scores = vec![0; players];
+    let mut marbles = Marbles::initial();
+    let mut player = 0;
+    for marble in 1..=max_score {
+        if marble % 23 == 0 {
+            scores[player] += marble;
+            marbles.step(-7);
+            scores[player] += marbles.remove();
+        } else {
+            marbles.step(1);
+            marbles.insert(marble);
+        }
+        player = (player + 1) % players;
+    }
+
+    scores
+}
+
 fn solve2(input: &mut Input) -> Result<Output, Error> {
     let (players, max_score) = *input;
-    let scores = play(players, 100 * max_score);
+    let scores = play2(players, 100 * max_score);
     scores
         .into_iter()
         .max()

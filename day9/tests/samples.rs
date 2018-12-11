@@ -69,17 +69,16 @@ fn sample2_1() {
         .with_args(&["-p", "2"])
         .stdin("9 players; last marble is worth 25 points")
         .stdout()
-        .is("2")
+        .is("22563")
         .unwrap();
 }
 
-// Takes too long to run
-//#[test]
-//fn puzzle2() {
-//    assert_cli::Assert::main_binary()
-//        .with_args(&["-p", "2"])
-//        .stdin(include_str!("../data/puzzle1.in"))
-//        .stdout()
-//        .is("2")
-//        .unwrap();
-//}
+#[test]
+fn puzzle2() {
+    assert_cli::Assert::main_binary()
+        .with_args(&["-p", "2"])
+        .stdin(include_str!("../data/puzzle1.in"))
+        .stdout()
+        .is("3350093681")
+        .unwrap();
+}
