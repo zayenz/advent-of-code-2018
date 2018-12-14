@@ -2,6 +2,8 @@ use hashbrown::HashMap;
 use std::cmp::max;
 use std::cmp::min;
 use std::fmt::Debug;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::ops::Index;
 use std::ops::IndexMut;
 use strum_macros::EnumString;
@@ -24,6 +26,12 @@ pub struct Position {
 impl Position {
     pub fn new(x: Scalar, y: Scalar) -> Position {
         Position { x, y }
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "({},{})", self.x, self.y)
     }
 }
 
@@ -289,5 +297,31 @@ where
 {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
         self.values.get_mut(&index.into()).unwrap()
+    }
+}
+
+impl<T> Display for Grid<T>
+where
+    T: Display + Debug + Clone + Eq,
+{
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        let width = self
+            .values
+            .values()
+            .map(|v| format!("{}", v).len())
+            .max()
+            .unwrap_or(1);
+        let filler = " ".repeat(width);
+        for y in self.min_y..self.max_y {
+            for x in self.min_x..self.max_x {
+                if let Some(v) = self.get((x, y).into()) {
+                    write!(f, "{:width$}", v, width = width)?;
+                } else {
+                    write!(f, "{}", filler)?;
+                }
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
