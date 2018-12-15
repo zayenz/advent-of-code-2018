@@ -27,10 +27,10 @@ use structopt::StructOpt;
 use strum_macros::EnumString;
 use tap::{TapOps, TapOptionOps, TapResultOps};
 
-use aoc2018::grid::Step;
-use aoc2018::grid::*;
 use aoc2018::input::*;
 use aoc2018::matrix::*;
+use aoc2018::sparse_grid::Step;
+use aoc2018::sparse_grid::*;
 use std::collections::BTreeSet;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -94,7 +94,7 @@ impl Cart {
     }
 
     fn step(&self, grid: &Grid<Track>) -> Cart {
-        use aoc2018::grid::Direction::*;
+        use aoc2018::sparse_grid::Direction::*;
 
         let start_track = grid[self.position];
         let position = start_track

@@ -37,7 +37,7 @@ impl Display for Position {
 
 impl Step<Cardinal> for Position {
     fn step(&self, direction: Cardinal) -> Self {
-        use crate::grid::Cardinal::*;
+        use crate::sparse_grid::Cardinal::*;
         let (x, y) = match direction {
             North => (self.x, self.y - 1),
             South => (self.x, self.y + 1),
@@ -50,7 +50,7 @@ impl Step<Cardinal> for Position {
 
 impl Step<Direction> for Position {
     fn step(&self, direction: Direction) -> Self {
-        use crate::grid::Direction::*;
+        use crate::sparse_grid::Direction::*;
         let (x, y) = match direction {
             Up => (self.x, self.y - 1),
             Down => (self.x, self.y + 1),
@@ -107,8 +107,8 @@ pub enum Cardinal {
 
 impl Cardinal {
     pub fn turn(self, turn: Turn) -> Cardinal {
-        use crate::grid::Cardinal::*;
-        use crate::grid::Turn::*;
+        use crate::sparse_grid::Cardinal::*;
+        use crate::sparse_grid::Turn::*;
         match (self, turn) {
             (North, Left) => West,
             (North, Right) => East,
@@ -132,7 +132,7 @@ pub enum Direction {
 
 impl Direction {
     pub fn turn(self, turn: Turn) -> Direction {
-        use crate::grid::Direction::*;
+        use crate::sparse_grid::Direction::*;
         match (self, turn) {
             (Up, Turn::Left) => Left,
             (Up, Turn::Right) => Right,
@@ -148,8 +148,8 @@ impl Direction {
 
 impl From<Cardinal> for Direction {
     fn from(cardinal: Cardinal) -> Self {
-        use crate::grid::Cardinal::*;
-        use crate::grid::Direction::*;
+        use crate::sparse_grid::Cardinal::*;
+        use crate::sparse_grid::Direction::*;
         match cardinal {
             North => Up,
             South => Down,
@@ -161,8 +161,8 @@ impl From<Cardinal> for Direction {
 
 impl From<Direction> for Cardinal {
     fn from(direction: Direction) -> Self {
-        use crate::grid::Cardinal::*;
-        use crate::grid::Direction::*;
+        use crate::sparse_grid::Cardinal::*;
+        use crate::sparse_grid::Direction::*;
         match direction {
             Up => North,
             Down => South,
