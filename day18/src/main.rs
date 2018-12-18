@@ -16,6 +16,7 @@ use std::str;
 use std::str::FromStr;
 use std::{io, process};
 
+use enum_map::*;
 use failure::bail;
 use failure::err_msg;
 use failure::Error;
@@ -39,7 +40,7 @@ use std::fmt::Formatter;
 type Input = Grid<Tile>;
 type Output = String;
 
-#[derive(EnumString, Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+#[derive(EnumString, Enum, Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 enum Tile {
     Empty,
     Open,
@@ -113,43 +114,47 @@ fn read_input() -> Result<Input, Error> {
     Ok(grid)
 }
 
-fn checksum(grid: &Grid<Tile>) -> u64 {
-    let frequencies = grid.values.iter().cloned().collect::<Frequencies<Tile>>();
-    frequencies.count(&Trees) * frequencies.count(&Lumberyard)
+fn count(it: &mut impl Iterator<Item = Tile>) -> EnumMap<Tile, usize> {
+    let mut counts = EnumMap::new();
+    for value in it {
+        counts[value] += 1;
+    }
+    counts
+}
+
+fn checksum(grid: &Grid<Tile>) -> usize {
+    let frequencies = count(&mut grid.values.iter().cloned());
+    frequencies[Trees] * frequencies[Lumberyard]
 }
 
 fn solve1(input: &mut Input) -> Result<Output, Error> {
     let mut current = input.clone();
 
-    //    println!("Start:\n{}", current);
-
     for _ in 0..10 {
-        let mut next = current.clone(); //Grid::from_origo(current.width, current.height);
-        for x in 1..current.width - 1 {
-            for y in 1..current.height - 1 {
+        let mut next = current.clone();
+        for x in 1..(input.width - 1) {
+            for y in 1..(input.height - 1) {
                 let pos: Position = (x, y).into();
                 let tile = current[pos];
-                let neighbours = connect8(pos)
-                    .map(|n| current[n])
-                    .collect::<Frequencies<Tile>>();
+                let neighbours = count(&mut connect8(pos).map(|n| current[n]));
                 next[pos] = match tile {
                     Empty => Empty,
                     Open => {
-                        if neighbours.count(&Trees) >= 3 {
+                        if neighbours[Trees] >= 3 {
                             Trees
                         } else {
                             Open
                         }
                     }
                     Trees => {
-                        if neighbours.count(&Lumberyard) >= 3 {
+                        if neighbours[Lumberyard] >= 3 {
                             Lumberyard
                         } else {
                             Trees
                         }
                     }
                     Lumberyard => {
-                        if neighbours.count(&Lumberyard) >= 1 && neighbours.count(&Trees) >= 1 {
+                        if neighbours[Lumberyard] >= 1 && neighbours[Trees] >= 1 {
                             Lumberyard
                         } else {
                             Open
@@ -158,7 +163,6 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
                 }
             }
         }
-        //        println!("After iteration {}:\n{}", i, next);
 
         current = next;
     }
