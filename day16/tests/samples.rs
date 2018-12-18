@@ -30,6 +30,6 @@ fn puzzle2() {
         .with_args(&["-p", "2"])
         .stdin(include_str!("../data/puzzle1.in"))
         .stdout()
-        .is("1")
+        .is("674")
         .unwrap();
 }

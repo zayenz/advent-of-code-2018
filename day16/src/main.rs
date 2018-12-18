@@ -240,8 +240,105 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
     Ok(format!("{}", matches3))
 }
 
-fn solve2(_input: &mut Input) -> Result<Output, Error> {
-    Ok(format!("{}", "2"))
+fn is_valid(input: Registers, output: Registers, asm: Assembly) -> bool {
+    if let Ok(actual) = execute(asm, input) {
+        if actual == output {
+            return true;
+        }
+    };
+    false
+}
+
+fn solve2(input: &mut Input) -> Result<Output, Error> {
+    let (tests, program) = input;
+
+    // Set up potential mappings between code-points and assembly instructions
+    //
+    let mut code2asm = Vec::new();
+    for _op in 0..16 {
+        code2asm.push(INSTS.iter().cloned().collect::<HashSet<_>>());
+    }
+    let mut asm2code = HashMap::new();
+    for inst in INSTS.iter() {
+        asm2code.insert(inst, (0..16).collect::<HashSet<Word>>());
+    }
+
+    // Use the test programs to remove potential mappings
+    //
+    for (input, (code, arg1, arg2, res), output) in tests.iter().cloned() {
+        for &inst in INSTS.iter() {
+            let asm: Assembly = (inst, arg1, arg2, res);
+            if !is_valid(input, output, asm) {
+                code2asm[code as usize].remove(&inst);
+                asm2code.get_mut(&inst).unwrap().remove(&code);
+            }
+        }
+    }
+
+    // Propagate assignments
+    //  * only one potential assembly instruction for a code point
+    //  * only one potential code point for an assembly instruction
+    //
+    // From testing this is enough to solve the current problem.
+    //
+    let mut handled_code_value = HashSet::new();
+    let mut handled_asm_value = HashSet::new();
+    loop {
+        let mut propagation = false;
+        for op in 0..16 {
+            if code2asm[op].len() == 1 && !handled_code_value.contains(&op) {
+                propagation = true;
+                handled_code_value.insert(op);
+                let inst = *code2asm[op].iter().next().unwrap();
+                for other_op in 0..15 {
+                    if other_op != op {
+                        code2asm[other_op].remove(&inst);
+                        asm2code.get_mut(&inst).unwrap().remove(&(other_op as Word));
+                    }
+                }
+            }
+        }
+
+        for inst in INSTS.iter() {
+            if asm2code[inst].len() == 1 && !handled_asm_value.contains(inst) {
+                propagation = true;
+                handled_asm_value.insert(*inst);
+                let op = *asm2code[inst].iter().next().unwrap();
+                for other_inst in INSTS.iter() {
+                    if other_inst != inst {
+                        code2asm[op as usize].remove(other_inst);
+                        asm2code.get_mut(other_inst).unwrap().remove(&op);
+                    }
+                }
+            }
+        }
+
+        if !propagation {
+            break;
+        }
+    }
+
+    // Use the resulting mapping to execute the program
+    let program = program
+        .iter()
+        .cloned()
+        .map(|(code, arg1, arg2, res)| {
+            (
+                *code2asm[code as usize].iter().next().unwrap(),
+                arg1,
+                arg2,
+                res,
+            )
+        })
+        .collect_vec();
+
+    let mut regs: Registers = [0; 4];
+
+    for asm in program.iter() {
+        regs = execute(*asm, regs)?;
+    }
+
+    Ok(format!("{}", regs[0]))
 }
 
 #[derive(StructOpt, Debug)]
