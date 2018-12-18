@@ -30,21 +30,11 @@ fn puzzle1() {
 }
 
 #[test]
-fn sample2_1() {
-    assert_cli::Assert::main_binary()
-        .with_args(&["-p", "2"])
-        .stdin("51589")
-        .stdout()
-        .is("2")
-        .unwrap();
-}
-
-#[test]
 fn puzzle2() {
     assert_cli::Assert::main_binary()
         .with_args(&["-p", "2"])
         .stdin(include_str!("../data/puzzle1.in"))
         .stdout()
-        .is("2")
+        .is("219919")
         .unwrap();
 }

@@ -127,10 +127,10 @@ fn checksum(grid: &Grid<Tile>) -> usize {
     frequencies[Trees] * frequencies[Lumberyard]
 }
 
-fn solve1(input: &mut Input) -> Result<Output, Error> {
+fn evolve(input: &Grid<Tile>, iterations: usize) -> Grid<Tile> {
     let mut current = input.clone();
 
-    for _ in 0..10 {
+    for _ in 0..iterations {
         let mut next = current.clone();
         for x in 1..(input.width - 1) {
             for y in 1..(input.height - 1) {
@@ -167,11 +167,17 @@ fn solve1(input: &mut Input) -> Result<Output, Error> {
         current = next;
     }
 
-    Ok(format!("{}", checksum(&current)))
+    current
 }
 
-fn solve2(_input: &mut Input) -> Result<Output, Error> {
-    Ok("2".to_owned())
+fn solve1(input: &mut Input) -> Result<Output, Error> {
+    let result = evolve(input, 10);
+    Ok(format!("{}", checksum(&result)))
+}
+
+fn solve2(input: &mut Input) -> Result<Output, Error> {
+    let result = evolve(input, 1000);
+    Ok(format!("{}", checksum(&result)))
 }
 
 #[derive(StructOpt, Debug)]
